@@ -24,6 +24,7 @@ Library.KeybindFrame.Visible = false -- <<< desativa o "keybinds" da tela!
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
 
 -- Variáveis
 local character = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
@@ -39,45 +40,34 @@ local hitboxAtivado = false
 local hitboxLoop = nil
 
 -- Funções do Air Rotate
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-
-local character = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
-local hrp = character:WaitForChild("HumanoidRootPart")
-local camera = workspace.CurrentCamera
-local humanoid = character:WaitForChild("Humanoid")
-local lastCamCFrame = camera.CFrame
-
--- Função para checar se o personagem está no ar
 local function isInAir()
     return humanoid.FloorMaterial == Enum.Material.Air
 end
 
--- Função para verificar se o Shift Lock está ativado
 local function isShiftLockEnabled()
     return UserInputService.MouseBehavior == Enum.MouseBehavior.LockCenter
 end
 
 -- Função que roda a cada frame
-RunService.RenderStepped:Connect(function()
-    -- Verificar se o Shift Lock está ativado antes de aplicar o Air Rotate
-    if isShiftLockEnabled() then
-        local currentCam = camera.CFrame
-        local deltaYaw = (currentCam.LookVector - lastCamCFrame.LookVector).Magnitude
+local function airRotate()
+    RunService.RenderStepped:Connect(function()
+        if airRotateEnabled and isShiftLockEnabled() then
+            local currentCam = camera.CFrame
+            local deltaYaw = (currentCam.LookVector - lastCamCFrame.LookVector).Magnitude
 
-        -- Se a câmera foi girada e o personagem estiver no ar
-        if deltaYaw > 0.01 and isInAir() then
-            local lookVector = currentCam.LookVector
-            local flatDirection = Vector3.new(lookVector.X, 0, lookVector.Z).Unit
+            -- Se a câmera foi girada e o personagem estiver no ar
+            if deltaYaw > 0.01 and isInAir() then
+                local lookVector = currentCam.LookVector
+                local flatDirection = Vector3.new(lookVector.X, 0, lookVector.Z).Unit
 
-            if flatDirection.Magnitude > 0 then
-                hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + flatDirection)
+                if flatDirection.Magnitude > 0 then
+                    hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + flatDirection)
+                end
             end
+            lastCamCFrame = currentCam
         end
-        lastCamCFrame = currentCam
-    end
-end)
+    end)
+end
 
 -- Funções da Hitbox
 local function duplicarHitbox(bolaModel)
@@ -137,6 +127,10 @@ FunctionsGroup:AddToggle('AirRotateToggle', {
     Tooltip = 'Gira o personagem no ar baseado na câmera',
 }):OnChanged(function(state)
     airRotateEnabled = state
+
+    if state then
+        airRotate() -- Ativa o Air Rotate quando o toggle estiver ativado
+    end
 end)
 
 FunctionsGroup:AddToggle('BallHitboxToggle', {
