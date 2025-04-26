@@ -5,7 +5,7 @@ local ThemeManager = loadstring(game:HttpGet('https://gist.githubusercontent.com
 local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
 
 local Window = Library:CreateWindow({
-    Title = 'NATUM HUB',
+    Title = 'GABEE HUB',
     Center = true,
     AutoShow = true,
     TabPadding = 8,
